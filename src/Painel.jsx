@@ -39,12 +39,12 @@ export default function Painel({ escopo, contas, perfil, perfis, config, acertos
   async function salvarMeta(c, v) {
     const n = num(v), novas = { ...metas };
     if (n > 0) novas[c] = n; else delete novas[c];
-    if (escopo === 'casa') await supabase.from('casa_config').update({ metas: novas }).eq('id', 1);
+    if (escopo === 'casa') await supabase.from('casas').update({ metas: novas }).eq('id', config.id);
     else await supabase.from('perfis').update({ metas: novas }).eq('id', perfil.id);
     reload();
   }
 
-  const pg = perfis.find(p => p.id === config?.pagador), outro = perfis.find(p => p.id !== config?.pagador);
+  const pg = perfis.find(p => p.id === config?.pagador), outros = perfis.filter(p => p.id !== config?.pagador);
   const pct = Number(config?.pct_pagador) || 50, deve = (total * (100 - pct)) / 100, ac = acertos.find(a => a.mes === mes);
 
   return (
@@ -57,10 +57,11 @@ export default function Painel({ escopo, contas, perfil, perfis, config, acertos
       {escopo === 'casa' && config && (
         <div className="card">
           <h3>Acerto do mês</h3>
-          {pg && outro
-            ? <p><b>{outro.nome}</b> deve <b>{brl(deve)}</b> a <b>{pg.nome}</b> ({100 - pct}% de {brl(total)}).</p>
+          {pg && outros.length
+            ? outros.map(o => <p key={o.id}><b>{o.nome}</b> deve <b>{brl(deve / outros.length)}</b> a <b>{pg.nome}</b>.</p>)
             : <p>Defina quem paga as contas em ⚙️ Ajustes.</p>}
-          <label className="chk"><input type="checkbox" checked={!!ac?.feito} onChange={async e => { await supabase.from('acertos').upsert({ mes, feito: e.target.checked }); reload(); }} /> Acerto feito</label>
+          {pg && outros.length > 0 && <small>{100 - pct}% de {brl(total)}, dividido entre {outros.length} {outros.length > 1 ? 'pessoas' : 'pessoa'}.</small>}
+          <label className="chk"><input type="checkbox" checked={!!ac?.feito} onChange={async e => { await supabase.from('acertos').upsert({ casa_id: config.id, mes, feito: e.target.checked }, { onConflict: 'casa_id,mes' }); reload(); }} /> Acerto feito</label>
         </div>
       )}
 

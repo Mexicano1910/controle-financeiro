@@ -14,28 +14,24 @@ export default async function handler(req, res) {
   const [c, p, m] = await Promise.all([
     sb.from('contas').select('*').eq('status', 'pendente').lte('vencimento', lim),
     sb.from('perfis').select('id, ntfy_topic'),
-    sb.from('casa_membros').select('user_id'),
+    sb.from('casa_membros').select('user_id, casa_id'),
   ]);
   if (c.error || p.error || m.error) return res.status(500).json({ erro: (c.error || p.error || m.error).message });
 
-  const membros = m.data.map(x => x.user_id);
   const porUsuario = {};
   for (const conta of c.data) {
     const quando = conta.vencimento < hoje ? `VENCIDA em ${fmt(conta.vencimento)}` : conta.vencimento === hoje ? 'vence HOJE' : `vence ${fmt(conta.vencimento)}`;
     const linha = `${conta.descricao || conta.beneficiario} - R$ ${Number(conta.valor).toFixed(2).replace('.', ',')} - ${quando}${conta.escopo === 'casa' ? ' (casa)' : ''}`;
-    for (const u of conta.escopo === 'casa' ? membros : [conta.dono_id]) (porUsuario[u] ||= []).push(linha);
+    const destinos = conta.escopo === 'casa' ? m.data.filter(x => x.casa_id === conta.casa_id).map(x => x.user_id) : [conta.dono_id];
+    for (const u of destinos) (porUsuario[u] ||= []).push(linha);
   }
 
-  let enviados = 0;
-  for (const perfil of p.data) {
-    const linhas = porUsuario[perfil.id];
-    if (!linhas || !perfil.ntfy_topic) continue;
-    await fetch(`https://ntfy.sh/${encodeURIComponent(perfil.ntfy_topic)}`, {
+  const envios = p.data.filter(x => x.ntfy_topic && porUsuario[x.id]).map(perfil =>
+    fetch(`https://ntfy.sh/${encodeURIComponent(perfil.ntfy_topic)}`, {
       method: 'POST',
       headers: { Title: 'Contas a vencer', Priority: 'high' },
-      body: linhas.join('\n') + '\n\nJa pagou? Envie o comprovante no app para dar baixa.',
-    });
-    enviados++;
-  }
-  res.status(200).json({ ok: true, enviados });
+      body: porUsuario[perfil.id].join('\n') + '\n\nJa pagou? Envie o comprovante no app para dar baixa.',
+    }).catch(() => null));
+  await Promise.all(envios);
+  res.status(200).json({ ok: true, enviados: envios.length });
 }

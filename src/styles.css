@@ -32,3 +32,6 @@ input[type=checkbox] { width:auto; margin-right:6px; }
 .chk { display:flex; align-items:center; }
 .cat { margin:8px 0; } .meta { padding:4px 8px; font-size:.85rem; }
 .barra { height:8px; background: var(--bd); border-radius:6px; overflow:hidden; } .barra i { display:block; height:100%; }
+.membro { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--bd); }
+.cod { font-family: monospace; font-size:1.1rem; letter-spacing:2px; }
+.login button:not(.prim) { background:none; border:none; color:var(--pri); padding:4px; }

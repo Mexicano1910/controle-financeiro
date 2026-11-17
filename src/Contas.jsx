@@ -14,7 +14,7 @@ function acimaDaMedia(c, todas) {
   return d > 0.2 ? Math.round(d * 100) : null;
 }
 
-export default function Contas({ escopo, contas, user, onEditar, reload }) {
+export default function Contas({ escopo, casaId, contas, user, onEditar, reload }) {
   const [mes, setMes] = useState(hoje().slice(0, 7));
   const todas = contas.filter(c => c.escopo === escopo);
   const lista = todas.filter(c => c.vencimento.startsWith(mes)).sort((a, b) => a.vencimento.localeCompare(b.vencimento));
@@ -30,7 +30,7 @@ export default function Contas({ escopo, contas, user, onEditar, reload }) {
     const ultimo = new Date(y, m, 0).getDate();
     const jaTem = new Set(lista.map(c => norm(c.beneficiario || c.descricao)));
     const novas = todas.filter(c => c.recorrente && c.vencimento.startsWith(ant) && !jaTem.has(norm(c.beneficiario || c.descricao)))
-      .map(c => ({ dono_id: user.id, escopo, descricao: c.descricao, beneficiario: c.beneficiario, categoria: c.categoria, valor: c.valor, recorrente: true,
+      .map(c => ({ dono_id: user.id, escopo, casa_id: escopo === 'casa' ? casaId : null, descricao: c.descricao, beneficiario: c.beneficiario, categoria: c.categoria, valor: c.valor, recorrente: true,
         vencimento: `${mes}-${String(Math.min(+c.vencimento.slice(8, 10), ultimo)).padStart(2, '0')}` }));
     if (!novas.length) return alert('Nenhuma conta recorrente do mês anterior para repetir.');
     await supabase.from('contas').insert(novas);
