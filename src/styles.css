@@ -1,37 +1,66 @@
-:root { --bg:#f5f6fa; --card:#fff; --tx:#1f2430; --mut:#6b7280; --pri:#4f46e5; --bd:#e5e7eb; --ok:#10b981; --ruim:#ef4444; color-scheme: light dark; }
-@media (prefers-color-scheme: dark) { :root { --bg:#12141a; --card:#1c1f28; --tx:#e8eaf0; --mut:#9aa1b0; --bd:#2b2f3a; } }
+/* Paleta CODECOR TECH: preto #0A0A0A, cinza escuro #1F1F1F, cinza médio #686868, cinza claro #D9D9D9,
+   branco #FFFFFF, dourado âmbar #E0A526 (cor principal), cobre #B87333 (destaque), marrom escuro #3A2A17.
+   Verde/amarelo/vermelho ficam só para o status das contas. */
+:root {
+  --bg:#0A0A0A; --card:#1F1F1F; --tx:#FFFFFF; --mut:#9A9A9A; --bd:#333333;
+  --pri:#E0A526; --pri-tx:#0A0A0A; --acc:#B87333; --soft:#3A2A17; --link:#E0A526;
+  --ok:#10b981; --pend:#eab308; --ruim:#ef4444;
+  color-scheme: dark light;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg:#D9D9D9; --card:#FFFFFF; --tx:#0A0A0A; --mut:#686868; --bd:#C2C2C2; --soft:#F3E7D3; --link:#B87333; }
+}
 * { box-sizing: border-box; }
 body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--tx); }
-.app { max-width: 640px; margin: 0 auto; padding: 8px 12px 90px; }
+.app { max-width: 640px; margin: 0 auto; padding: 8px 12px 90px; position: relative; z-index: 1; }
 .centro { text-align:center; margin-top:30vh; }
+.centro-txt { text-align:center; }
 button, input, select { font: inherit; color: inherit; }
 button { background: var(--card); border:1px solid var(--bd); border-radius:10px; padding:8px 12px; cursor:pointer; }
-button.on { background: var(--pri); color:#fff; border-color: var(--pri); }
-button.prim { background: var(--pri); color:#fff; border-color: var(--pri); }
+button:hover { border-color: var(--pri); }
+button.on, button.prim { background: var(--pri); color: var(--pri-tx); border-color: var(--pri); font-weight:600; }
 button:disabled { opacity:.5; }
 input, select { width:100%; padding:10px; margin:4px 0; border:1px solid var(--bd); border-radius:10px; background: var(--card); }
-input[type=checkbox] { width:auto; margin-right:6px; }
+input:focus, select:focus { outline: 2px solid var(--pri); border-color: var(--pri); }
+input[type=checkbox] { width:auto; margin-right:6px; accent-color: var(--pri); }
+input[type=range] { accent-color: var(--pri); padding:0; }
+.marca { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 0 2px; }
+.marca img { width:30px; height:30px; border-radius:8px; }
+.marca b { letter-spacing:.35em; color: var(--pri); }
 .topo, .sub { display:flex; gap:6px; margin:6px 0; } .topo button { flex:1; } .sub button { flex:1; padding:6px; }
 .card { background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:14px; margin:10px 0; display:flex; flex-direction:column; gap:6px; }
-.card h3, .card h2 { margin:6px 0 2px; } .card p { margin:4px 0; }
-.login { max-width:360px; margin:15vh auto; }
+.card h3, .card h2 { margin:6px 0 2px; } .card h3 { color: var(--link); } .card p { margin:4px 0; }
+.login { max-width:360px; margin:12vh auto; position:relative; z-index:1; }
+.logo-login { width:84px; height:84px; border-radius:20px; margin:0 auto; display:block; }
+.marca-titulo { text-align:center; letter-spacing:.4em; margin:4px 0 0; color: var(--pri); }
 .linha { display:flex; justify-content:space-between; align-items:center; gap:8px; } .linha input { width:auto; }
 .resumo { text-align:right; display:flex; flex-direction:column; } small { color: var(--mut); }
-.conta { display:flex; justify-content:space-between; gap:8px; background:var(--card); border:1px solid var(--bd); border-left:5px solid #f59e0b; border-radius:12px; padding:10px; margin:8px 0; }
-.conta.paga { border-left-color: var(--ok); opacity:.75; } .conta.vencida { border-left-color: var(--ruim); }
+.conta { display:flex; justify-content:space-between; gap:8px; background:var(--card); border:1px solid var(--bd); border-left:5px solid var(--pend); border-radius:12px; padding:10px; margin:8px 0; }
+.conta.paga { border-left-color: var(--ok); opacity:.8; } .conta.vencida { border-left-color: var(--ruim); }
 .info { display:flex; flex-direction:column; cursor:pointer; flex:1; } .dir { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
 .dir .x { padding:2px 8px; }
-.alerta { color:#d97706; } .erro { color: var(--ruim); } .aviso { color: var(--pri); } .vazio { color: var(--mut); text-align:center; }
+.alerta { color: var(--pend); } .erro { color: var(--ruim); } .aviso { color: var(--link); } .ok { color: var(--ok); font-weight:600; } .vazio { color: var(--mut); text-align:center; }
 .acoes { flex-wrap:wrap; margin-top:12px; }
-.fab { position:fixed; right:18px; bottom:22px; width:56px; height:56px; border-radius:50%; background:var(--pri); color:#fff; font-size:28px; padding:0; border:none; box-shadow:0 4px 14px #0004; }
-.modal { position:fixed; inset:0; background:#0007; display:flex; align-items:flex-end; justify-content:center; z-index:10; }
+.fab { position:fixed; right:18px; bottom:22px; width:56px; height:56px; border-radius:50%; background:var(--pri); color:var(--pri-tx); font-size:28px; padding:0; border:none; box-shadow:0 4px 14px #0006; z-index:5; }
+.modal { position:fixed; inset:0; background:#000a; display:flex; align-items:flex-end; justify-content:center; z-index:10; }
 .folha { width:100%; max-width:640px; max-height:92vh; overflow:auto; border-radius:18px 18px 0 0; margin:0; }
 .dois { display:flex; gap:8px; } .dois > * { flex:1; }
-.arquivo { border:2px dashed var(--pri); border-radius:12px; padding:14px; text-align:center; cursor:pointer; color:var(--pri); font-weight:600; }
-.comp { border:1px solid var(--bd); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px; }
+.arquivo { border:2px dashed var(--pri); border-radius:12px; padding:14px; text-align:center; cursor:pointer; color: var(--link); font-weight:600; background: var(--soft); }
+.comp { border:1px solid var(--bd); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px; background: var(--soft); }
 .chk { display:flex; align-items:center; }
 .cat { margin:8px 0; } .meta { padding:4px 8px; font-size:.85rem; }
 .barra { height:8px; background: var(--bd); border-radius:6px; overflow:hidden; } .barra i { display:block; height:100%; }
 .membro { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--bd); }
 .cod { font-family: monospace; font-size:1.1rem; letter-spacing:2px; }
-.login button:not(.prim) { background:none; border:none; color:var(--pri); padding:4px; }
+.acerto { display:flex; flex-direction:column; gap:4px; padding-bottom:8px; border-bottom:1px solid var(--bd); }
+.login button:not(.prim) { background:none; border:none; color: var(--link); padding:4px; }
+
+/* Logo da CODECOR TECH nas laterais (computador) */
+.lado { display:none; }
+@media (min-width: 1100px) {
+  .lado { display:flex; position:fixed; top:0; bottom:0; width: calc((100vw - 640px) / 2); flex-direction:column; align-items:center; justify-content:center; gap:6px; pointer-events:none; z-index:0; }
+  .lado.esq { left:0; } .lado.dir { right:0; }
+  .lado img { width: min(300px, 75%); height:auto; opacity:.95; }
+  .lado small { letter-spacing:.3em; text-transform:uppercase; font-size:.65rem; margin-top:8px; }
+  .lado span { letter-spacing:.45em; color: var(--pri); font-weight:600; }
+}

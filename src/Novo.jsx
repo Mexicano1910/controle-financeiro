@@ -9,7 +9,7 @@ import { brl, fmtData, hoje, norm, num } from './lib/util.js';
 const vazio = { descricao: '', beneficiario: '', categoria: 'Outros', escopo: '', valor: '', vencimento: '', status: 'pendente', pago_em: '', codigo_barras: '', recorrente: false };
 const virgula = v => (v == null ? '' : String(v).replace('.', ','));
 
-export default function Novo({ user, temCasa, casaId, contas, regras, escopo, conta, onFechar, onSalvo }) {
+export default function Novo({ user, temCasa, casaId, extras = [], contas, regras, escopo, conta, onFechar, onSalvo }) {
   const [f, setF] = useState(conta
     ? { ...vazio, ...conta, valor: virgula(conta.valor), pago_em: conta.pago_em || '', codigo_barras: conta.codigo_barras || '' }
     : { ...vazio, escopo: temCasa ? escopo : 'pessoal' });
@@ -92,7 +92,7 @@ export default function Novo({ user, temCasa, casaId, contas, regras, escopo, co
         <input placeholder="Descrição (ex.: Conta de luz)" value={f.descricao} onChange={e => set('descricao', e.target.value)} />
         <input placeholder="Quem recebe (ex.: Enel)" value={f.beneficiario} onChange={e => set('beneficiario', e.target.value)}
           onBlur={() => { if (!conta && f.beneficiario) { const s = sugerir(f.beneficiario, regras, user.id); setF(x => ({ ...x, categoria: s.categoria, escopo: x.escopo || escopoValido(s.escopo) })); } }} />
-        <select value={f.categoria} onChange={e => set('categoria', e.target.value)}>{CATEGORIAS.map(c => <option key={c}>{c}</option>)}</select>
+        <select value={f.categoria} onChange={e => set('categoria', e.target.value)}>{[...new Set([...CATEGORIAS, ...extras, f.categoria])].map(c => <option key={c}>{c}</option>)}</select>
         <div className="dois">
           <input inputMode="decimal" placeholder="Valor (ex.: 230,10)" value={f.valor} onChange={e => set('valor', e.target.value)} />
           <input type="date" value={f.vencimento} onChange={e => set('vencimento', e.target.value)} />

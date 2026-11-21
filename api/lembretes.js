@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   const envios = p.data.filter(x => x.ntfy_topic && porUsuario[x.id]).map(perfil =>
     fetch(`https://ntfy.sh/${encodeURIComponent(perfil.ntfy_topic)}`, {
       method: 'POST',
-      headers: { Title: 'Contas a vencer', Priority: 'high' },
+      headers: { Title: 'METHRA - contas a vencer', Priority: 'high' },
       body: porUsuario[perfil.id].join('\n') + '\n\nJa pagou? Envie o comprovante no app para dar baixa.',
     }).catch(() => null));
   await Promise.all(envios);

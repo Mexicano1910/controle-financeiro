@@ -6,6 +6,8 @@ import Painel from './Painel.jsx';
 import Novo from './Novo.jsx';
 import Ajustes from './Ajustes.jsx';
 import SemCasa from './SemCasa.jsx';
+import Laterais from './Laterais.jsx';
+import { CATEGORIAS } from './lib/regras.js';
 
 // Link de convite (?convite=CODIGO): guarda o código para usar depois do cadastro/login
 const codigoDoLink = new URLSearchParams(location.search).get('convite');
@@ -40,13 +42,13 @@ function Principal({ user }) {
 
   const carregar = useCallback(async () => {
     const q = t => supabase.from(t).select('*');
-    const r = await Promise.all([q('perfis'), q('casa_membros'), supabase.from('casas').select('*').maybeSingle(), q('contas').order('vencimento'), q('regras'), q('acertos'), q('convites')]);
-    const erro = r.find(x => x.error);
+    const r = await Promise.all([q('perfis'), q('casa_membros'), supabase.from('casas').select('*').maybeSingle(), q('contas').order('vencimento'), q('regras'), q('acerto_pagamentos'), q('convites')]);
+    const erro = r.find((x, i) => x.error && i !== 5); // a tabela de pagamentos do acerto é opcional até rodar a migração
     if (erro) { setD({ erro: erro.error.message }); return null; }
     const [p, m, casa, c, rg, a, cv] = r;
     const dados = {
       perfis: p.data, perfil: p.data.find(x => x.id === user.id) || { id: user.id }, membros: m.data,
-      config: casa.data, temCasa: !!casa.data, contas: c.data, regras: rg.data, acertos: a.data,
+      config: casa.data, temCasa: !!casa.data, contas: c.data, regras: rg.data, pagamentos: a.error ? [] : a.data,
       convites: cv.data.filter(x => !x.usado && new Date(x.expira_em) > new Date()),
     };
     setD(dados);
@@ -75,9 +77,13 @@ function Principal({ user }) {
   const escopo = aba === 'ajustes' ? 'pessoal' : aba;
   const semCasa = aba === 'casa' && !d.temCasa;
   const casaId = d.config?.id;
+  const extras = [...new Set([...Object.keys(d.perfil.metas || {}), ...Object.keys(d.config?.metas || {})])].filter(c => !CATEGORIAS.includes(c));
 
   return (
+    <>
+    <Laterais />
     <div className="app">
+      <header className="marca"><img src="/icon-192.png" alt="" /><b>METHRA</b></header>
       <nav className="topo">
         <button className={aba === 'casa' ? 'on' : ''} onClick={() => setAba('casa')}>🏠 Casa</button>
         <button className={aba === 'pessoal' ? 'on' : ''} onClick={() => setAba('pessoal')}>👤 Meu pessoal</button>
@@ -94,14 +100,15 @@ function Principal({ user }) {
           </nav>
           {sub === 'contas'
             ? <Contas escopo={escopo} casaId={casaId} contas={d.contas} user={user} onEditar={c => setNovo({ conta: c })} reload={carregar} />
-            : <Painel escopo={escopo} contas={d.contas} perfil={d.perfil} perfis={d.perfis} config={d.config} acertos={d.acertos} reload={carregar} />}
+            : <Painel escopo={escopo} user={user} contas={d.contas} perfil={d.perfil} perfis={d.perfis} membros={d.membros} config={d.config} pagamentos={d.pagamentos} reload={carregar} />}
           <button className="fab" onClick={() => setNovo({})}>＋</button>
         </>
       )}
       {novo && (
-        <Novo user={user} temCasa={d.temCasa} casaId={casaId} contas={d.contas} regras={d.regras} escopo={escopo} conta={novo.conta}
+        <Novo user={user} temCasa={d.temCasa} casaId={casaId} extras={extras} contas={d.contas} regras={d.regras} escopo={escopo} conta={novo.conta}
           onFechar={() => setNovo(null)} onSalvo={() => { setNovo(null); carregar(); }} />
       )}
     </div>
+    </>
   );
 }
