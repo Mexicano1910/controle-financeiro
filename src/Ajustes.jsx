@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { supabase } from './supabase.js';
 import { fmtData, num } from './lib/util.js';
+import Avisos from './Avisos.jsx';
 
 export default function Ajustes({ user, d, reload }) {
   const { perfil, perfis, config, temCasa, membros } = d;
   const [nome, setNome] = useState(perfil.nome || '');
-  const [topic, setTopic] = useState(perfil.ntfy_topic || '');
   const [renda, setRenda] = useState(String(perfil.renda || '').replace('.', ','));
   const [nomeCasa, setNomeCasa] = useState(config?.nome || '');
   const [pagador, setPagador] = useState(config?.pagador || '');
@@ -16,7 +16,7 @@ export default function Ajustes({ user, d, reload }) {
 
   async function salvar(e) {
     e.preventDefault();
-    await supabase.from('perfis').update({ nome, ntfy_topic: topic || null, renda: num(renda) || 0 }).eq('id', user.id);
+    await supabase.from('perfis').update({ nome, renda: num(renda) || 0 }).eq('id', user.id);
     if (temCasa && config) {
       await supabase.from('casas').update({ nome: nomeCasa || 'Minha casa', pagador: pagador || null, pct_pagador: Number.isNaN(Number(pct)) ? 50 : Number(pct), renda_casa: num(rendaCasa) || 0 }).eq('id', config.id);
     }
@@ -29,12 +29,6 @@ export default function Ajustes({ user, d, reload }) {
         <h3>Meu perfil</h3>
         <input placeholder="Seu nome" value={nome} onChange={e => setNome(e.target.value)} />
         <input inputMode="decimal" placeholder="Minha renda mensal (R$)" value={renda} onChange={e => setRenda(e.target.value)} />
-        <h3>Avisos de vencimento</h3>
-        <small>Instale o app gratuito <b>ntfy</b> (iPhone/Android) e assine o tópico abaixo. Os avisos chegam todo dia de manhã.</small>
-        <div className="dois">
-          <input placeholder="Tópico do ntfy" value={topic} onChange={e => setTopic(e.target.value)} />
-          <button type="button" onClick={() => setTopic('fin-' + crypto.randomUUID().replace(/-/g, '').slice(0, 14))}>Gerar</button>
-        </div>
         {temCasa && config && (
           <>
             <h3>Casa</h3>
@@ -53,6 +47,7 @@ export default function Ajustes({ user, d, reload }) {
         {ok && <p className="aviso">{ok}</p>}
         <button type="button" onClick={() => supabase.auth.signOut()}>Sair</button>
       </form>
+      <Avisos user={user} />
       {temCasa && config && <GestaoCasa user={user} d={d} reload={reload} />}
     </>
   );
